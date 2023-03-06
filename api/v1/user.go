@@ -56,7 +56,7 @@ func EditUser(c *gin.Context) {
 	var data model.User
 	id, _ := strconv.Atoi(c.Param("id"))
 	_ = c.ShouldBindJSON(&data)
-	code = model.CheckUser(data.Username)
+	code = model.VerifyUserExists(data.Username)
 	if code == messages.SUCCSE {
 		model.EditUserInfo(id, &data)
 	}

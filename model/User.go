@@ -25,6 +25,15 @@ func CheckUser(name string) (code int) {
 	return messages.SUCCSE
 }
 
+func VerifyUserExists(name string) (code int) {
+	var user User
+	db.Select("id").Where("username = ?", name).First(&user)
+	if user.ID > 0 {
+		return messages.SUCCSE
+	}
+	return messages.ERROR_USER_NOT_EXIST
+}
+
 // CreateUser 创建用户
 func CreateUser(data *User) int {
 	data.Password = ScryptPw(data.Password)
@@ -51,6 +60,9 @@ func EditUserInfo(id int, data *User) int {
 	var maps = make(map[string]any)
 	maps["username"] = data.Username
 	maps["role"] = data.Role
+	if data.Password != "" {
+		maps["password"] = ScryptPw(data.Password)
+	}
 	err = db.Model(&user).Where("id = ? ", id).Updates(maps).Error
 	if err != nil {
 		return messages.ERROR
@@ -58,7 +70,7 @@ func EditUserInfo(id int, data *User) int {
 	return messages.SUCCSE
 }
 
-// 删除用户
+// DeleteUser 删除用户
 func DeleteUser(name string) int {
 	var user User
 	err = db.Where("username = ?", name).Delete(&user).Error
@@ -80,4 +92,22 @@ func ScryptPw(password string) string {
 	}
 	fpw := base64.StdEncoding.EncodeToString(HashPw)
 	return fpw
+}
+
+// CheckLogin 登录验证
+func CheckLogin(username string, password string) int {
+	var user User
+
+	db.Where("username = ?", username).First(&user)
+
+	if user.ID == 0 {
+		return messages.ERROR_USER_NOT_EXIST
+	}
+	if ScryptPw(password) != user.Password {
+		return messages.ERROR_PASSWORD_WRONG
+	}
+	if user.Role != 0 {
+		return messages.ERROR_USER_NO_RIGHT
+	}
+	return messages.SUCCSE
 }
