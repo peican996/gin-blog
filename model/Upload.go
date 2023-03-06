@@ -4,8 +4,8 @@ import (
 	"context"
 	"gin-blog/utils"
 	"gin-blog/utils/messages"
-	"github.com/qiniu/api.v7/v7/auth/qbox"
-	"github.com/qiniu/api.v7/v7/storage"
+	"github.com/qiniu/go-sdk/v7/auth/qbox"
+	"github.com/qiniu/go-sdk/v7/storage"
 	"mime/multipart"
 )
 
@@ -21,11 +21,13 @@ func UpLoadFile(file multipart.File, fileSize int64) (string, int) {
 	mac := qbox.NewMac(AccessKey, SecretKey)
 	upToken := putPolicy.UploadToken(mac)
 
-	cfg := storage.Config{
-		Zone:          &storage.ZoneHuanan,
-		UseCdnDomains: false,
-		UseHTTPS:      false,
-	}
+	cfg := storage.Config{}
+	// 空间对应的机房
+	cfg.Region = &storage.ZoneHuanan
+	// 是否使用https域名
+	cfg.UseHTTPS = false
+	// 上传是否使用CDN上传加速
+	cfg.UseCdnDomains = false
 
 	putExtra := storage.PutExtra{}
 
