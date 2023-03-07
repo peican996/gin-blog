@@ -10,7 +10,7 @@ type Category struct {
 	Name string `gorm:"type:varchar(20);not null" json:"name"`
 }
 
-// CheckCategory 用户校验
+// CheckCategory 分类校验
 func CheckCategory(name string) (code int) {
 	var category Category
 	db.Select("id").Where("name = ?", name).First(&category)
@@ -20,7 +20,7 @@ func CheckCategory(name string) (code int) {
 	return messages.SUCCSE
 }
 
-// CreateCategory 创建用户
+// CreateCategory 创建分类
 func CreateCategory(data *Category) int {
 	err := db.Create(&data).Error
 	if err != nil {
@@ -40,13 +40,14 @@ func GetCategory(name string) Category {
 }
 
 // GetCategories 获取用户信息
-func GetCategories(pageSize int, pageNum int) []Category {
-	var category []Category
-	err = db.Limit(pageSize).Offset((pageNum - 1) * pageSize).Find(&category).Error
+func GetCategories(pageSize int, pageNum int) ([]Category, int64) {
+	var cate []Category
+	var total int64
+	err = db.Limit(pageSize).Offset((pageNum - 1) * pageSize).Find(&cate).Count(&total).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return nil
+		return nil, 0
 	}
-	return category
+	return cate, total
 }
 
 // EditCategoryInfo 用户信息编辑

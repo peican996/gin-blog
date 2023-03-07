@@ -25,13 +25,14 @@ func CreateArt(data *Article) int {
 }
 
 // GetCateArt 查询分类下的所有文章
-func GetCateArt(id int, pageSize int, pageNum int) ([]Article, int) {
+func GetCateArt(id int, pageSize int, pageNum int) ([]Article, int, int64) {
 	var cateArtList []Article
-	err := db.Preload("Category").Limit(pageSize).Offset((pageNum-1)*pageSize).Where("cid =?", id).Find(&cateArtList).Error
+	var total int64
+	err := db.Preload("Category").Limit(pageSize).Offset((pageNum-1)*pageSize).Where("cid =?", id).Find(&cateArtList).Count(&total).Error
 	if err != nil {
-		return nil, messages.ERROR_CATE_NOT_EXIST
+		return nil, messages.ERROR_CATE_NOT_EXIST, 0
 	}
-	return cateArtList, messages.SUCCSE
+	return cateArtList, messages.SUCCSE, total
 }
 
 // GetArtInfo 查询单个文章
